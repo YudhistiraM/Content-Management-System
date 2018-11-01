@@ -63,7 +63,6 @@ router.post('/register', function(req, res, next){
 
   router.post('/check', (req, res) =>{
     var token = req.body.token || req.query.token || req.header['x-access-token'];
-    // console.log("token:", token);
     jwt.verify(token, 'secretkey', (err, decoded)=>{
       if(decoded){
         res.json({valid: true})
