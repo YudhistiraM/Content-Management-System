@@ -57,7 +57,7 @@ describe('data', function(){
       res.should.have.status(200);
       res.should.be.json;
       res.body[0].should.be.a('object');
-      res.body[0].should.have.property('_id')
+      res.body[0].should.have.property('_id');
       res.body[0].should.have.property('letter');
       res.body[0].should.have.property('frequency');
       res.body[0].letter.should.equal("A");
@@ -81,7 +81,7 @@ describe('data', function(){
     })
   })
 
-  it("Seharusnya sistem mengenbalikan berhasil mengubah data dengan metode PUT", function(done){
+  it("Seharusnya sistem mengembalikan berhasil mengubah data dengan metode PUT", function(done){
     chai.request(server)
     .get('/api/data')
     .end(function(err, res){
