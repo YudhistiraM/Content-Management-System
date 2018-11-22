@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>CMS</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+</head>
+<body>
+  <nav class="navbar navbar-default">
+    <div class="container-fluid">
+      <!-- Brand and toggle get grouped for better mobile display -->
+      <div class="navbar-header">
+        <a class="navbar-brand" href="http://localhost:2001/"><span class="glyphicon glyphicon-arrow-left"> Dashboard</span>
+        </a>
+      </div>
+    </div><!-- /.container-fluid -->
+  </nav>
+
+  <div class="container-fluid" style="margin-top:10%">
+    <div class="row">
+      <div class="col-md-4"></div>
+      <div class="col-md-4">
+
+        <div class="panel panel-primary">
+          <div class="panel-heading">
+            <div class="row text-center">
+              <div class="col-md-6">
+                <a href="#" class="active" style="color:white" id="login-form-link"><h4>Login</h2></a>
+                </div>
+                <div class="col-md-6">
+                  <a href="#"  style="color:white" id="register-form-link"><h4>Register</h2></a>
+                  </div>
+                </div>
+              </div>
+              <div class="panel-body">
+                <form id="login-form" style="display: block;">
+                  <div class="form-group">
+                    <label for="email" class="text-left">Email address</label>
+                    <input type="email" class="form-control" id="emailLogin" placeholder="Email" required>
+                  </div>
+                  <div class="form-group">
+                    <label for="pass">Password</label>
+                    <input type="password" class="form-control" id="passwordLogin" placeholder="Password" required>
+                  </div>
+                  <div class="text-center">
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                  </div>
+                </form>
+                <form id="register-form" style="display: none;">
+                  <div class="form-group">
+                    <label for="email" class="text-left">Email address</label>
+                    <input type="email" class="form-control" id="emailRegister" placeholder="Email" required>
+                  </div>
+                  <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" class="form-control" id="passwordRegister" placeholder="Password" required>
+                  </div>
+                  <div class="form-group">
+                    <label for="retypepassword">Confirm Password</label>
+                    <input type="password" class="form-control" id="retypepassword" placeholder="Confirm Password" required>
+                  </div>
+                  <div class="text-center">
+                    <button type="submit" class="btn btn-success">Register Now</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+
+          </div>
+          <div class="col-md-4"></div>
+        </div>
+
+      </div>
+      <script type="text/javascript">
+      $(function() {
+        $('#login-form-link').click(function(e) {
+          $("#login-form").delay(100).fadeIn(100);
+          $("#register-form").fadeOut(100);
+          $('#register-form-link').removeClass('active');
+          $(this).addClass('active');
+          e.preventDefault();
+        });
+        $('#register-form-link').click(function(e) {
+          $("#register-form").delay(100).fadeIn(100);
+          $("#login-form").fadeOut(100);
+          $('#login-form-link').removeClass('active');
+          $(this).addClass('active');
+          e.preventDefault();
+        });
+      });
+
+      function register(){
+        $.ajax({
+          url: 'http://localhost:3000/api/users/register',
+          method: 'POST',
+          data: {
+            email: $('#emailRegister').val(),
+            password: $('#passwordRegister').val(),
+            retypepassword: $('#retypepassword').val()
+          }
+        }).done(data=>{
+          console.log(data);
+          if(data.token){
+            localStorage.setItem('token', data.token);
+            localStorage.setItem('email', data.data.email);
+            window.location = "/home";
+          }else{
+            alert(data.message);
+          }
+        }).fail(err=>{
+          alert(`something went wrong, ${JSON.stringify(err)}`);
+        })
+      }
+
+      $('#register-form').submit(function(e){
+        e.preventDefault();
+        register();
+        $(this).find("input[type=email], input[type=password], input[type=password]").val('');
+      })
+
+      function login(){
+        $.ajax({
+          url: 'http://localhost:3000/api/users/login',
+          method: 'POST',
+          data: {email: $('#emailLogin').val(), password: $('#passwordLogin').val()}
+        }).done(data => {
+          if(data.token){
+            localStorage.setItem('token', data.token);
+            localStorage.setItem('email', data.data.email);
+            window.location = "/home";
+          }else {
+            alert(data.message);
+          }
+        }).fail(err => {
+          alert(`something went wrong, ${JSON.stringify(err)}`);
+        })
+      }
+
+    $('#login-form').submit(function(e){
+      e.preventDefault();
+      login();
+      $(this).find("input[type=email], input[type=password]").val('')
+    })
+    </script>
+  </body>
+  </html>

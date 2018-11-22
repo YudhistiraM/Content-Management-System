@@ -11,24 +11,32 @@ var User = require('../models/user');
 //   })
 // })
 
+  router.post('/register', function(req, res, next){
+  // let countMail = User.find({email: req.body.email}).count();
+  // console.log(countMail);
+  if (req.body.password == req.body.retypepassword) {
+    const user = new User({
+      email: req.body.email,
+      password: req.body.password,
+      retypepassword: req.body.retypepassword
+    });
 
-router.post('/register', function(req, res, next){
-  const user = new User({
-    email: req.body.email,
-    password: req.body.password,
-    retypepassword: req.body.retypepassword
-  });
-
-  user.save((err, userSaved)=>{
-    let token = jwt.sign({ user: user }, 'secretkey', { expiresIn: 86400 });
-    res.json(
-      {
-        data: {
-          email: userSaved.email
-        },
-        token: token
-      });
-    })
+    user.save((err, userSaved)=>{
+      let token = jwt.sign({ user: user }, 'secretkey', { expiresIn: 86400 });
+      res.json(
+        {
+          data: {
+            email: userSaved.email
+          },
+          token: token
+        });
+      })
+    }else {
+      res.json({
+        error: true,
+        message: 'password and retypepassword are not match'
+      })
+    }
   })
 
   router.post('/login', (req, res) =>{
