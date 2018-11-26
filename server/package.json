@@ -5,7 +5,8 @@
   "scripts": {
     "start": "node ./bin/www",
     "dev": "nodemon ./bin/www",
-    "test": "mocha"
+    "test": "mocha",
+    "seed": "node seeds"
   },
   "dependencies": {
     "chai-http": "^4.2.0",

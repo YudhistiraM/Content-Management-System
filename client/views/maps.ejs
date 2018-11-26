@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>CMS</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+</head>
+<body>
+
+  <nav class="navbar navbar-inverse">
+    <div class="container-fluid">
+      <!-- Brand and toggle get grouped for better mobile display -->
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="http://localhost:2001/home">Conten Management System</a>
+      </div>
+
+      <!-- Collect the nav links, forms, and other content for toggling -->
+      <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+        <ul class="nav navbar-nav">
+          <li><a href="http://localhost:2001/home">Home</a></li>
+          <li><a href="http://localhost:2001/data">Data</a></li>
+          <li><a href="http://localhost:2001/dataDate">Data Date</a></li>
+          <li class="active"><a href="http://localhost:2001/maps">Maps</a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-right">
+          <li><a href="#" id="logout">Logout</a></li>
+        </ul>
+      </div><!-- /.navbar-collapse -->
+    </div><!-- /.container-fluid -->
+  </nav>
+
+  <div class="container">
+    <div id="input-alert" class="alert alert-success" role="alert"></div>
+    <div id="input-alert2" class="alert alert-danger" role="alert"></div>
+
+    <div class="panel panel-warning">
+      <div class="panel-heading text-center">
+        <b class="panel-title">DATA MAPS</b>
+      </div>
+      <div class="panel-body">
+        <button id="add-btn" class="btn btn-primary" style="margin-bottom:10px"><span class="glyphicon glyphicon-plus">Add</span></button>
+
+        <div id="add-form" class="panel panel-default">
+          <div class="panel-body">
+            <form class="form-inline">
+              <h3></h3>
+              <div class="form-group">
+                <label for="addtitle" class="text-left">Title</label>
+                <input type="text" class="form-control" id="addtitle" placeholder="title of map" required>
+              </div>
+              <div class="form-group">
+                <label for="addlatitude">Latitude</label>
+                <input type="text" class="form-control" id="addlatitude" placeholder="0.000" required>
+              </div>
+              <div class="form-group">
+                <label for="addlongitude">Longitude</label>
+                <input type="text" class="form-control" id="addlongitude" placeholder="0.000" required>
+              </div>
+              <button type="submit" class="btn btn-success"><span class="glyphicon glyphicon-save">Save</span></button>
+            </form>
+          </div>
+        </div>
+
+        <form id="search-form" class="form-inline">
+          <h3>Search</h3>
+          <div class="form-group">
+            <label for="searchtitle" class="text-left">title</label>
+            <input type="text" class="form-control" id="searchtitle" placeholder="title...">
+          </div>
+        </form>
+
+        <br>
+        <h3>List of Data Maps</h3>
+        <table class="table table-striped">
+          <thead>
+            <th>No</th>
+            <th>ID</th>
+            <th>Title</th>
+            <th>Latitude</th>
+            <th>Longitude</th>
+            <th>Actions</th>
+          </thead>
+          <tbody>
+
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <script type="text/javascript">
+  let id ="";
+
+  $(document).ready(function(){
+    auth(localStorage.getItem('token'));
+    $('#add-form').hide();
+    $('#input-alert').hide();
+    $('#input-alert2').hide();
+    getData();
+  })
+
+  $('#add-btn').click(function(){
+    $('#add-form').toggle();
+  })
+
+// add
+$('#add-form').submit(function(e){
+  e.preventDefault();
+  $('#add-form').hide();
+  saveData();
+})
+
+// searchData
+$('#searchtitle').keyup(function(){
+  $('#searchtitle').val($('#searchtitle').val());
+  searchData();
+});
+
+// EDIT
+$('table tbody').on('click', '.editBtn', function(){
+  $('#addtitle').val($(this).attr('containtitle'));
+  $('#addlatitude').val($(this).attr('containlat'));
+  $('#addlongitude').val($(this).attr('containlng'));
+  id = $(this).attr('containid');
+  $("#add-form").show();
+})
+
+// Delete
+$('table tbody').on('click', '.deleteBtn', function(){
+  let confirmData = confirm("Are you sure want to delete this data?");
+  if(confirmData){
+    $.ajax({
+      url: 'http://localhost:3000/api/maps/' + $(this).attr('containid'),
+      method: 'DELETE'
+    }).done(data => {
+      dangerAlert("Data has been deleted");
+      $('#input-alert2').hide(5000);
+      getData();
+    })
+  }
+})
+
+  // Helper
+  function searchData() {
+    let title = $('#searchtitle').val();
+    if(typeof title !== 'string'){
+      dangerAlert("Please insert STRING!")
+    }else {
+      $.ajax({
+        url: 'http://localhost:3000/api/maps/search',
+        method: 'POST',
+        data: {
+          title: title
+        }
+      }).done(data => {
+        $('#input-alert').hide();
+        $('#input-alert2').hide();
+        showTable(data)
+      })
+    }
+  }
+
+  function auth(token){
+    $.ajax({
+      url: 'http://localhost:3000/api/users/check',
+      method: 'POST',
+      data: {
+        token: token
+      }
+    }).done(data => {
+      if(!data.valid){
+        window.location = '/login';
+      }
+    })
+  }
+
+  function saveData(){
+    let title  = $('#addtitle').val();
+    let lat = $('#addlatitude').val();
+    let lng = $('#addlongitude').val();
+    if(isNaN(lat) === true || isNaN(lng) === true){
+      dangerAlert("Please insert number")
+      $('#input-alert2').hide(5000);
+      $('#add-form').show();
+    }else{
+      if(id == ""){
+        // ADD DATA
+        $.ajax({
+          url: 'http://localhost:3000/api/maps/',
+          method: 'POST',
+          data: {
+            title: title,
+            lat: lat,
+            lng: lng
+          }
+        }).done(data => {
+          showAlert("Data has been added");
+          $('#addtitle').val('');
+          $('#addlatitude').val('');
+          $('#addlongitude').val('');
+          $('#input-alert').hide(5000);
+          $('#input-alert2').hide();
+          getData();
+        })
+      }else{
+        // EDIT DATA
+        $.ajax({
+          url: 'http://localhost:3000/api/maps/' + id,
+          method: 'PUT',
+          data: {
+            title: title,
+            lat: lat,
+            lng: lng
+          }
+        }).done(data => {
+          showAlert("Data has been edited");
+          $('#addletter').val('');
+          $('#addfrequency').val('');
+          $('#input-alert').hide(5000);
+          $('#input-alert2').hide();
+          $('#add-form').hide();
+          getData();
+          id = "";
+        })
+      }
+    }
+  }
+
+
+  function getData(){
+    $.ajax({
+      url: 'http://localhost:3000/api/maps',
+      method: "Get"
+    }).done(data => {
+      showTable(data)
+    })
+  }
+
+function showTable(add) {
+    let no = 0;
+    let trHTML = '';
+    add.forEach( data => {
+      no++;
+      trHTML += `<tr>`;
+      trHTML += `<td>${no}</td>`;
+      trHTML += `<td>${data._id}</td>`;
+      trHTML += `<td>${data.title}</td>`;
+      trHTML += `<td>${data.lat}</td>`;
+      trHTML += `<td>${data.lng}</td>`;
+      trHTML += `<td>`
+      trHTML += `<button class="editBtn btn btn-success" containid="${data._id}" containtitle="${data.title}" containlat="${data.lat}" containlng="${data.lng}"><span class="glyphicon glyphicon-pencil"> Edit</span></button>`
+      trHTML += `<button class="deleteBtn btn btn-danger" containid="${data._id}"><span class="glyphicon glyphicon-trash"> Delete</span></button>`
+      trHTML += `</td>`
+      trHTML += `</tr>`
+    })
+    $('table tbody').html(trHTML);
+  }
+
+  function showAlert(data){
+    $('#input-alert').show();
+    $('#input-alert').html(data);
+  }
+
+  function dangerAlert(data){
+    $('#input-alert2').show();
+    $('#input-alert2').html(data);
+  }
+
+  $('#logout').click(function(e){
+    e.preventDefault();
+    localStorage.clear();
+    window.location = '/login';
+  })
+
+
+</script>
+</body>
+</html>
